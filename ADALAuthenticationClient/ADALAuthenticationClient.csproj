@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Julian Hüppauff</Authors>
+    <Product>ADAL Authentication Client</Product>
+    <PackageId>Hueppauff.ADALAuthenticationClient</PackageId>
+    <PackageLicenseUrl>https://github.com/jhueppauff/ADALAuthenticationClient/blob/master/LICENSE</PackageLicenseUrl>
+    <Copyright />
+    <PackageTags>.netstandard</PackageTags>
+    <RepositoryUrl>https://github.com/jhueppauff/ADALAuthenticationClient</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/jhueppauff/ADALAuthenticationClient</PackageProjectUrl>
+    <RepositoryType>github</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
