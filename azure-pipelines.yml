@@ -2,6 +2,7 @@
 # Build and run tests for .NET Desktop or Windows classic desktop solutions.
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+name: $(MajorVersion).$(MinorVersion).$(Year:yy)$(DayOfYear)$(Rev:.rr)
 
 pool:
   vmImage: 'VS2017-Win2016'
@@ -10,21 +11,47 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  MajorVersion: '1'
+  MinorVersion: '0'
+  Patch: '0'
 
 steps:
-- task: NuGetToolInstaller@0
-
-- task: NuGetCommand@2
+# Restore NuGet packages
+- task: DotNetCoreCLI@2
+  displayName: Restore NuGet Packages
   inputs:
-    restoreSolution: '$(solution)'
+    command: restore
+    projects: ADALAuthenticationClient
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- task: richardfennellBM.BM-VSTS-Versioning-Task.Version-DotNetCoreAssemblies-Task.VersionDotNetCoreAssemblies@2
+  displayName: 'Version .NET Core Assemblies'
 
-- task: VSTest@2
+# Compile
+- task: DotNetCoreCLI@2
+  displayName: Compile
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: build
+    projects: ADALAuthenticationClient
+    arguments: '--configuration $(buildConfiguration)'
+
+# Pack
+- script:
+    dotnet pack $(Build.SourcesDirectory)\ADALAuthenticationClient\ADALAuthenticationClient.csproj -o $(build.artifactstagingdirectory) -c $(buildConfiguration) /p:Version=$(Build.BuildNumber)
+
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: 'ADALAuthenticationClient'
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+    zipAfterPublish: false
+    modifyOutputPath: false
+
+
+# Publish the artifacts
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)
